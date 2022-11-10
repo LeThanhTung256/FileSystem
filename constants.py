@@ -5,4 +5,6 @@ Sf = 32
 Sd = 512
 Sv = 1048576
 ByPerSec = 512
+ByPerEntry = 32
 MinSize = 0.25
+ByteDelete = bytes.fromhex('E5')

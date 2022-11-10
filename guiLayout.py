@@ -49,3 +49,13 @@ openVolumeLayout = [
     [pg.T(size=(13, 0), font="Any 30"), pg.Button("Open", font="Any 17", size=(10, 0)), pg.Button("Back", font="Any 17", size=(10, 0))],
     [pg.T()],
 ]
+
+volumeLayout = [
+    [pg.T("")],
+    [pg.Text("", font="Any 30", size=(30, 0), justification="left", key="_name_")],
+    [pg.T(size=(0, 3))],
+    [pg.T(size=(13, 0), font="Any 30"), pg.Button("Import", font="Any 17", size=(10, 0)), pg.Button("Export", font="Any 17", size=(10, 0))],
+    [pg.T()],
+    [pg.T(size=(13, 0), font="Any 30"), pg.Button("Back", font="Any 17", size=(10, 0)), pg.Button("Exit", font="Any 17", size=(10, 0))],
+    [pg.T()],
+]
