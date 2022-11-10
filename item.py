@@ -6,13 +6,6 @@ class TypeItem(Enum):
     FOLDER = 'folder'
     FILE = "file"
 
-class Item:
-    def __init__(self, type: TypeItem, name: str, path: str = '', children: List = None):
-        self.type = type
-        self.name = name
-        self.path = path
-        self.children = children
-
 class ItemProperties:
     def __init__(
         self,
@@ -21,7 +14,6 @@ class ItemProperties:
         system: bool = False,
         volLabel: bool = False,
         directory: bool = False,
-        archive: bool = False,
         hex: bytes = None
         ):
         if hex == None:
@@ -69,4 +61,15 @@ class ItemProperties:
         tmp += int(self.__archive) * pow(2, 5)
         return tmp.to_bytes(1, 'little')
 
+class Item:
+    def __init__(self, type: ItemProperties, beginCluster: int, name: str, size: int, path: str = '', children: List = None):
+        self.type = type
+        self.name = name
+        self.path = path
+        self.beginCluster = beginCluster
+        self.children = children
+        self.size = size
+    
+    def __str__(self):
+        return f'{self.name}'
       

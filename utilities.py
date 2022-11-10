@@ -33,7 +33,7 @@ def emptyEntry(sector):
     index = 0
     while index <= maxEntry:
         firstByteOfEntry = sector[index * constants.ByPerEntry]
-        if firstByteOfEntry.to_bytes(1, 'little') == bytes(1):
+        if firstByteOfEntry == 0:
             return index
         index += 1
     return None
