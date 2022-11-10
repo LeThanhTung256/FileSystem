@@ -8,7 +8,7 @@ import math
 
 import constants
 from utilities import hashPass, isPass, createSector, emptyEntry, deletedEntry
-from item import ItemProperties
+from item import ItemProperties, Item
 class Volume:
     __Sb:int = constants.Sb # Số sector của boot sector (1 sector)
     __Nf:int = constants.Nf # Số lượng bảng FAT (2)
@@ -109,10 +109,12 @@ class Volume:
         fileNameBytes = bytes(fileName, 'utf-8')
         size = len(fileNameBytes)
         fileNameBytes += bytes.fromhex('20') * abs(8 - size)
+        fileNameBytes = fileNameBytes[0:8]
         # Phần tên phụ lưu trong 3 bytes tiếp
         tagBytes = bytes(tag,'utf-8')
         size = len(tagBytes)
         tagBytes += bytes.fromhex('20') * abs(3 - size)
+        tagBytes = tagBytes[0:3]
 
         # Thuộc tính tập tin, lưu trong 1 byte tiếp theo
         properties = ItemProperties().hex() 
@@ -186,13 +188,13 @@ class Volume:
     # Đọc sector theo index
     def __readSector(self, index):
         with open(self.__Name, 'rb') as vol:
-            position = index * constants.ByPerSec
+            position = int(index * constants.ByPerSec)
             vol.seek(position, 0)
             sector = vol.read(constants.ByPerSec)
             vol.close()
             return sector
 
-    # Đọc theo cluster
+    # Đọc theo cluster theo index
     def __readBlock(self, index):
         # Tính vị trí byte đầu tiên của phần data
         firstBlockPosition = (self.__Sb + self.__Nf * self.__Sf + self.__Sd) * constants.ByPerSec
@@ -212,7 +214,7 @@ class Volume:
             vol.close()
 
     # Ghi cluster theo index
-    def __writeCluster(self, index, cluster):
+    def __writeBlock(self, index, cluster):
         firstBlockPosition = int(self.__Sb + self.__Nf * self.__Sf + self.__Sd) * constants.ByPerSec
         position = int(firstBlockPosition + index * self.__Sc * constants.ByPerSec)
         with open(self.__Name, 'r+b') as vol:
@@ -238,6 +240,17 @@ class Volume:
             self.__writeSector(clusters[i][0], newSector)
             self.__writeSector(clusters[i][0] + self.__Sf, newSector)
 
+    def __readIndexFAT(self, index):
+        numberPositionInSector = constants.ByPerSec / 2
+        sectorIndex = int(index // numberPositionInSector)
+        position = int(index % numberPositionInSector)
+        sector = self.__readSector(sectorIndex + self.__Sb)
+        itemFAT = sector[position * 2: (position + 1) * 2]
+        if itemFAT == bytes.fromhex('ff') * 2:
+            return -1
+        else:
+            return int.from_bytes(itemFAT, 'little')
+
     # Ghi entry vào bảng thư mục gốc
     def __writeEntryIntoRDET(self, entry, poi):
         sector = self.__readSector(poi[0])
@@ -251,13 +264,56 @@ class Volume:
                 if i != clusters[-1]:
                     data = file.read(self.__Sc * constants.ByPerSec)
                     index = self.__indexCluster(i)
-                    self.__writeCluster(index, data)
+                    self.__writeBlock(index, data)
                 else:
                     data = file.read()
                     size = len(data)
-                    addData = bytes(self.__Sc * constants.ByPerSec - size)
+                    addData = bytes.fromhex('')*(self.__Sc * constants.ByPerSec - size)
                     data += addData
                     index = self.__indexCluster(i)
-                    self.__writeCluster(index, data)
+                    self.__writeBlock(index, data)
 
+    # Đọc thuộc tính của entry
+    def __readPropertiesEntry(self, entry: bytes) -> Item:
+        name = str(entry[0:8], 'utf-8').rstrip()
+        tag = str(entry[8: 11], 'utf-8').rstrip()
+        if tag != '':
+            name = name + '.' + tag
+        
+        properties = ItemProperties(entry[11])
+        firClus1 = entry[20:22]
+        firClus2 = entry[26:28]
+        frirstClus = int.from_bytes((firClus2 + firClus1), 'little')
+        size = int.from_bytes(entry[28:], 'little')
+
+        item = Item(name = name, type=properties, beginCluster=frirstClus, size = size,)
+        return item
+
+    # ReadEntryRDET
+    def readEntrys(self):
+        firstSectorRDET = self.__Sb + self.__Nf * self.__Sf
+        entryPerSector = math.ceil(constants.ByPerSec / constants.ByPerEntry)
+        numberSectorsRDET = math.ceil(self.__Sd / entryPerSector)
+        items = []
+        for i in range(0, numberSectorsRDET):
+            sector = self.__readSector(firstSectorRDET + i)
+            for j in range(0, entryPerSector):
+                entry = sector[j * constants.ByPerEntry: (j + 1) * constants.ByPerEntry]
+                if entry[0] not in (0, int.from_bytes(constants.ByteDelete, 'little')):
+                    item = self.__readPropertiesEntry(entry)
+                    items.append(item)
+        return items
     
+    # Export file 
+    def exportFile(self, file: Item, filepath: str = ''):
+        indexCluster = file.beginCluster
+        data = self.__readBlock(indexCluster)
+        while indexCluster != -1:
+            indexCluster = self.__readIndexFAT(indexCluster)
+            data = data + self.__readBlock(indexCluster)
+        
+        with open(filepath + file.name, 'wb') as file:
+            file.write(data.rstrip(bytes.fromhex('00')))
+            file.close()
+        
+                
