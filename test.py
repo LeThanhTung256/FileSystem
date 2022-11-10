@@ -1,27 +1,14 @@
-import uuid
-import hashlib
-from utilities import hashPass, isPass
+# with open('test.txt', 'r+b') as file:
+#     file.seek(14, 0)
+#     file.write(b'afnsl')
+#     file.close()
 
-class test:
-    __pow = None
+import os
+from item import ItemProperties
 
-    def __new__(cls, a=None, b=None ):
-        if a != None or b != None:
-            return object().__new__(cls)
-        else:
-            raise TypeError("Sai rồi")
-    
-    def __init__(self, a=None, b=None):
-        if a != None:
-            self.__pow = int(a) + 2
-        else:
-            self.__pow = int(b)**2
-            
-    
-    def __str__(self) -> str:
-        return f'{self.__pow}'
+with open('1.DRS', 'rb') as file:
+    file.seek(0, 2)
+    print(file.tell())
 
-a = test(b = 8)
-print(a)
 
 
