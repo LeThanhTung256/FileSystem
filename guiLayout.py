@@ -53,9 +53,22 @@ openVolumeLayout = [
 volumeLayout = [
     [pg.T("")],
     [pg.Text("", font="Any 30", size=(30, 0), justification="left", key="_name_")],
+    [pg.T(size=(0, 2))],
+    [pg.Text("", font="Any 30", size=(1, 0)), pg.Text("Import file", font="Any 20 underline")],
+    [pg.Text("", font="Any 30", size=(2, 0)), pg.FileBrowse(button_text="Select file", font="Any 18", size=(11, 0), target='_file_import_'), pg.T(size=(3, 0), font="Any 30"), pg.Input(font="Any 18", size=(20, 0), key="_file_import_", readonly=True)],
+    [pg.Text("", font="Any 30", size=(20, 0)), pg.Button("Import", font="Any 18", size=(8, 0))],
+    [pg.Text("", font="Any 30", size=(1, 0)), pg.Text("Export file", font="Any 20 underline")],
+    [pg.Text("", font="Any 30", size=(2, 0)), pg.OptionMenu(default_value='Select file', values=['Select file'], size=(20, 0), key='_file_export_'), pg.T(size=(10, 0), font="Any 30"), pg.Button("Export", font="Any 18", size=(8, 0))],
     [pg.T(size=(0, 3))],
-    [pg.T(size=(13, 0), font="Any 30"), pg.Button("Import", font="Any 17", size=(10, 0)), pg.Button("Export", font="Any 17", size=(10, 0))],
-    [pg.T()],
-    [pg.T(size=(13, 0), font="Any 30"), pg.Button("Back", font="Any 17", size=(10, 0)), pg.Button("Exit", font="Any 17", size=(10, 0))],
-    [pg.T()],
+    [pg.T(size=(20, 0), font="Any 30"), pg.Button("Exit", font="Any 17", size=(8, 0))],
+    [pg.T("")],
+]
+
+successLayout = [
+    [pg.T("")],
+    [pg.Text("Success", font="Any 20", size=(20, 0), text_color="green", justification="center")],
+    [pg.T("")],
+    [pg.Text("", font="Any 15", size=(26, 0), key='_message_', justification="center")],
+    [pg.T("")],
+    [pg.T("", size=(18, 0)), pg.Button('Ok', font="Any 14", size=(4, 0))],
 ]

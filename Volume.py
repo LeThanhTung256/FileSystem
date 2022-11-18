@@ -289,7 +289,7 @@ class Volume:
         item = Item(name = name, type=properties, beginCluster=frirstClus, size = size,)
         return item
 
-    # ReadEntryRDET
+    # Đọc danh sách các thư mục/ tập tin trong thư mục gốc
     def readEntrys(self):
         firstSectorRDET = self.__Sb + self.__Nf * self.__Sf
         entryPerSector = math.ceil(constants.ByPerSec / constants.ByPerEntry)
@@ -316,4 +316,23 @@ class Volume:
             file.write(data.rstrip(bytes.fromhex('00')))
             file.close()
         
-                
+    # Delete file
+    # def deleteFile(self, filename: str):
+    #     # default trên thư mục gốc
+    #     firstSectorRDET = self.__Sb + self.__Nf * self.__Sf
+    #     entryPerSector = math.ceil(constants.ByPerSec / constants.ByPerEntry)
+    #     numberSectorsRDET = math.ceil(self.__Sd / entryPerSector)
+    #     for i in range(0, numberSectorsRDET):
+    #         sector = self.__readSector(firstSectorRDET + i)
+    #         for j in range(0, entryPerSector):
+    #             entry = sector[j * constants.ByPerEntry: (j + 1) * constants.ByPerEntry]
+    #             if entry[0] not in (0, int.from_bytes(constants.ByteDelete, 'little')):
+    #                 item = self.__readPropertiesEntry(entry)
+    #                 if item.name == filename:
+    #                     # Đổi byte đầu tiên của entry thành E5
+    #                     entry[0] = constants.ByteDelete
+
+    #                     # Xoá các vị trí cluster trong fat
+    #                     return 1
+
+    #         return -1    
