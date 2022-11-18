@@ -70,6 +70,4 @@ class Item:
         self.children = children
         self.size = size
     
-    def __str__(self):
-        return f'{self.name}'
       

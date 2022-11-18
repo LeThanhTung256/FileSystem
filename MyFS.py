@@ -1,10 +1,15 @@
 import PySimpleGUI as pg
+from enum import Enum
 import os
 
 import constants
-from guiLayout import homeLayout, createVolumeLayout, openVolumeLayout, volumeLayout
+from guiLayout import homeLayout, createVolumeLayout, openVolumeLayout, volumeLayout, successLayout
 from utilities import isNumber
 from Volume import Volume as Vol
+
+class NotificateType(Enum):
+    SUCCESS = 'success',
+    FAIL = 'fail'
 
 class MyFileSystem:
     # Khai báo các màn hình
@@ -12,6 +17,7 @@ class MyFileSystem:
     __createWindow = None
     __openWindow = None
     __volumeWindow = None
+    __successNotification = None
 
     # Khởi tạo chương trình
     def __init__(self):
@@ -118,11 +124,52 @@ class MyFileSystem:
         else:
             self.__volumeWindow.UnHide()
         self.__volumeWindow['_name_'].update(f'Volume: {volName}')
+        self.updateFilelist(vol)
 
         while True:
             event, values = self.__volumeWindow.read()
             if event in (pg.WIN_CLOSED, 'Exit'):
                 break
             if event == 'Import':
-                print('import file: test')
-                vol.importFile('test')
+                file = values['_file_import_']
+                vol.importFile(file)
+                self.updateFilelist(vol)
+                self.__notification('Import file successfully', NotificateType.SUCCESS)
+            
+            if event == 'Export':
+                file = values['_file_export_']
+                filesInRDet = vol.readEntrys()
+                for item in filesInRDet:
+                    if item.name == file:
+                        vol.exportFile(item)
+                        self.__notification('Export file successfully', NotificateType.SUCCESS)
+                        break
+
+    # Thông báo thánh công
+    def __notification(self, message: str, type: str):
+        if type == NotificateType.SUCCESS:
+            if self.__successNotification == None:
+                self.__successNotification = pg.Window('Success', successLayout, finalize=True)
+            else:
+                self.__successNotification.UnHide()
+
+            self.__successNotification['_message_'].update(message)
+
+            while True:
+                event, values = self.__volumeWindow.read()
+                if event in (pg.WIN_CLOSED, 'Ok'):
+                    self.__successNotification.Hide()
+                    break
+            
+            
+
+
+    #update file list in volume
+    def updateFilelist(self, vol: Vol):
+        items = vol.readEntrys()
+        filesInRDet = ['Select file']
+        for item in items:
+            filesInRDet.append(item.name)
+        
+        self.__volumeWindow['_file_export_'].update(values=filesInRDet)
+
